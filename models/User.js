@@ -4,19 +4,29 @@ const userSchema = new mongoose.Schema(
   {
     auth0Id: {
       type: String,
+      required: true,
       unique: true,
-      sparse: true,
+      trim: true,
     },
+
     name: {
       type: String,
       default: "",
+      trim: true,
     },
+
     email: {
       type: String,
-      unique: true,
-      sparse: true,
+      trim: true,
+      lowercase: true,
     },
-    savedCourses: [
+
+    picture: {
+      type: String,
+      default: "",
+    },
+
+    courses: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Course",
@@ -25,6 +35,8 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.index({ auth0Id: 1 });
 
 const User = mongoose.model("User", userSchema);
 
