@@ -1,3 +1,4 @@
+import { useParams } from "react-router-dom";
 import LessonRenderer from "../components/LessonRenderer";
 
 const sampleLessonContent = [
@@ -31,19 +32,21 @@ const sampleLessonContent = [
 ];
 
 function Lesson() {
+  const { courseId, moduleIndex, lessonIndex } = useParams();
+
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Lesson Viewer
+          Course: {courseId}
         </p>
 
         <h1 className="text-3xl font-bold text-slate-950">
-          Structured Lesson Rendering
+          Module {Number(moduleIndex) + 1}, Lesson {Number(lessonIndex) + 1}
         </h1>
 
         <p className="mt-2 text-slate-600">
-          This page renders lesson content dynamically from JSON blocks.
+          This lesson is rendered from structured JSON blocks.
         </p>
       </div>
 
