@@ -16,9 +16,9 @@ const sampleLessonContent = [
     text: "print('Hello, AI!')",
   },
   {
-    type: "video",
-    url: "AI Explained",
-  },
+  type: "video",
+  query: "Artificial Intelligence explained for beginners",
+},
   {
     type: "mcq",
     question: "What is AI?",
