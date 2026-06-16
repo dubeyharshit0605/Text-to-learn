@@ -8,7 +8,7 @@ function Topbar() {
     <header className="border-b border-slate-200 bg-white px-4 py-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-slate-500">Dashboard</p>
+          <p className="text-sm font-medium text-teal-700">Dashboard</p>
           <h2 className="text-lg font-bold text-slate-950">
             Build structured courses from prompts
           </h2>
@@ -27,7 +27,7 @@ function Topbar() {
           {!isLoading && !isAuthenticated && (
             <button
               onClick={() => loginWithRedirect()}
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+              className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-800"
             >
               Login
             </button>

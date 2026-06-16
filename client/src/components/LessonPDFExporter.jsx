@@ -28,7 +28,7 @@ const renderBlockToHtml = (block, index) => {
     case "code":
       return `
         <pre>
-          <code>${escapeHtml(block.code)}</code>
+          <code>${escapeHtml(block.text || block.code)}</code>
         </pre>
       `;
 
@@ -40,7 +40,12 @@ const renderBlockToHtml = (block, index) => {
         </div>
       `;
 
-    case "mcq":
+    case "mcq": {
+      const answerText =
+        typeof block.answer === "number"
+          ? block.options?.[block.answer]
+          : block.answer;
+
       return `
         <div class="pdf-mcq-box">
           <h3>Question ${index + 1}</h3>
@@ -51,12 +56,18 @@ const renderBlockToHtml = (block, index) => {
               .join("")}
           </ul>
           ${
-            block.answer
-              ? `<p><strong>Answer:</strong> ${escapeHtml(block.answer)}</p>`
+            answerText
+              ? `<p><strong>Answer:</strong> ${escapeHtml(answerText)}</p>`
+              : ""
+          }
+          ${
+            block.explanation
+              ? `<p><strong>Explanation:</strong> ${escapeHtml(block.explanation)}</p>`
               : ""
           }
         </div>
       `;
+    }
 
     default:
       return "";
@@ -74,14 +85,74 @@ const LessonPDFExporter = ({ lesson }) => {
 
       const title = lesson.title || "Lesson";
       const description = lesson.description || "";
+      const objectives = Array.isArray(lesson.objectives) ? lesson.objectives : [];
       const content = Array.isArray(lesson.content) ? lesson.content : [];
 
       const pdfElement = document.createElement("div");
 
       pdfElement.innerHTML = `
+        <style>
+          .lesson-pdf {
+            color: #0f172a;
+            font-family: Inter, Arial, sans-serif;
+            line-height: 1.55;
+            padding: 24px;
+          }
+
+          .lesson-pdf h1 {
+            font-size: 28px;
+            margin: 0 0 10px;
+          }
+
+          .lesson-pdf h2 {
+            font-size: 20px;
+            margin: 24px 0 8px;
+          }
+
+          .lesson-pdf h3 {
+            font-size: 16px;
+            margin: 0 0 8px;
+          }
+
+          .lesson-pdf p,
+          .lesson-pdf li {
+            font-size: 12px;
+          }
+
+          .pdf-description {
+            color: #475569;
+            margin-bottom: 16px;
+          }
+
+          .lesson-pdf pre {
+            background: #0f172a;
+            border-radius: 8px;
+            color: #f8fafc;
+            overflow-wrap: anywhere;
+            padding: 14px;
+            white-space: pre-wrap;
+          }
+
+          .pdf-video-box,
+          .pdf-mcq-box,
+          .pdf-objectives {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin: 14px 0;
+            padding: 14px;
+          }
+        </style>
         <div class="lesson-pdf">
           <h1>${escapeHtml(title)}</h1>
           ${description ? `<p class="pdf-description">${escapeHtml(description)}</p>` : ""}
+          ${
+            objectives.length
+              ? `<div class="pdf-objectives"><h3>Objectives</h3><ul>${objectives
+                  .map((objective) => `<li>${escapeHtml(objective)}</li>`)
+                  .join("")}</ul></div>`
+              : ""
+          }
           <hr />
           ${content.map(renderBlockToHtml).join("")}
         </div>
@@ -119,7 +190,7 @@ const LessonPDFExporter = ({ lesson }) => {
       type="button"
       onClick={handleDownloadPDF}
       disabled={downloading || !lesson}
-      className="download-pdf-btn"
+      className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-400"
     >
       {downloading ? "Preparing PDF..." : "Download Lesson as PDF"}
     </button>

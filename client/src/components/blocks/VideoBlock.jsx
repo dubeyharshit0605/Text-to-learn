@@ -59,8 +59,28 @@ function VideoBlock({ block }) {
     return null;
   }
 
+  if (!video.embedUrl) {
+    return (
+      <div className="my-6 rounded-lg border border-sky-100 bg-sky-50 p-5">
+        <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">
+          Suggested Video
+        </p>
+        <h3 className="mt-2 font-bold text-slate-950">{video.title}</h3>
+        <p className="mt-1 text-sm text-slate-600">{video.description}</p>
+        <a
+          href={video.watchUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 inline-flex rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800"
+        >
+          Open YouTube Search
+        </a>
+      </div>
+    );
+  }
+
   return (
-    <div className="my-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="my-6 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <div className="aspect-video w-full bg-slate-950">
         <iframe
           className="h-full w-full"

@@ -4,7 +4,11 @@ function MCQBlock({ block }) {
   const [selectedOption, setSelectedOption] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const isCorrect = selectedOption === block.answer;
+  const correctIndex =
+    typeof block.answer === "number"
+      ? block.answer
+      : block.options?.findIndex((option) => option === block.answer);
+  const isCorrect = selectedOption === correctIndex;
 
   const handleSubmit = () => {
     if (selectedOption === null) {
@@ -50,13 +54,20 @@ function MCQBlock({ block }) {
       </button>
 
       {isSubmitted && (
-        <p
-          className={`mt-4 font-semibold ${
-            isCorrect ? "text-green-700" : "text-red-700"
+        <div
+          className={`mt-4 rounded-lg p-3 ${
+            isCorrect
+              ? "bg-green-50 text-green-800"
+              : "bg-red-50 text-red-800"
           }`}
         >
-          {isCorrect ? "Correct answer!" : "Incorrect answer. Try again."}
-        </p>
+          <p className="font-semibold">
+            {isCorrect ? "Correct answer!" : "Incorrect answer. Try again."}
+          </p>
+          {block.explanation && (
+            <p className="mt-1 text-sm leading-6">{block.explanation}</p>
+          )}
+        </div>
       )}
     </div>
   );

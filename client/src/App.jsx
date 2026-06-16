@@ -2,7 +2,6 @@ import { Outlet, Route, Routes } from "react-router-dom";
 
 import Sidebar from "./components/Sidebar";
 import Topbar from "./components/Topbar";
-import ProtectedRoute from "./components/ProtectedRoute";
 
 import Home from "./pages/Home";
 import Course from "./pages/Course";
@@ -33,14 +32,11 @@ function App() {
         <Route index element={<Home />} />
 
         <Route path="courses" element={<Course />} />
+        <Route path="courses/:courseId" element={<Course />} />
 
         <Route
           path="courses/:courseId/module/:moduleIndex/lesson/:lessonIndex"
-          element={
-            <ProtectedRoute>
-              <Lesson />
-            </ProtectedRoute>
-          }
+          element={<Lesson />}
         />
       </Route>
 

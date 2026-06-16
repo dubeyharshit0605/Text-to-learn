@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../utils/api";
 
-function HinglishAudioExplanation({ lessonText }) {
+function HinglishAudioExplanation({ lessonText, initialText = "" }) {
   const [audioUrl, setAudioUrl] = useState("");
-  const [hinglishText, setHinglishText] = useState("");
+  const [hinglishText, setHinglishText] = useState(initialText);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState("");
 
@@ -25,12 +25,18 @@ function HinglishAudioExplanation({ lessonText }) {
       setIsGenerating(true);
       setError("");
       setAudioUrl("");
-      setHinglishText("");
+
+      const textResponse = await api.post("/explanations/hinglish-text", {
+        lessonText,
+      });
+
+      const translatedText = textResponse.data?.data?.hinglishText || "";
+      setHinglishText(translatedText);
 
       const response = await api.post(
         "/explanations/hinglish-audio",
         {
-          lessonText,
+          lessonText: translatedText || lessonText,
           voiceName: "Kore",
           tone: "friendly teacher",
         },
@@ -52,15 +58,17 @@ function HinglishAudioExplanation({ lessonText }) {
       const url = URL.createObjectURL(audioBlob);
       setAudioUrl(url);
     } catch (err) {
-      console.error("Hinglish audio generation failed:", err);
-      setError("Could not generate Hinglish audio right now.");
+      setError(
+        err.response?.data?.message ||
+          "Hinglish text is ready. Add GEMINI_API_KEY to generate audio."
+      );
     } finally {
       setIsGenerating(false);
     }
   };
 
   return (
-    <section className="mt-8 rounded-2xl border border-indigo-100 bg-indigo-50 p-5 shadow-sm">
+    <section className="mt-8 rounded-lg border border-indigo-100 bg-indigo-50 p-5 shadow-sm">
       <div className="mb-4">
         <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600">
           Accessibility
@@ -79,9 +87,9 @@ function HinglishAudioExplanation({ lessonText }) {
         type="button"
         onClick={handleGenerateAudio}
         disabled={isGenerating}
-        className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isGenerating ? "Generating audio..." : "Generate Hinglish Audio"}
+        {isGenerating ? "Preparing..." : "Generate Hinglish Explanation"}
       </button>
 
       {error && (
@@ -91,7 +99,7 @@ function HinglishAudioExplanation({ lessonText }) {
       )}
 
       {hinglishText && (
-        <div className="mt-4 rounded-xl bg-white p-4">
+        <div className="mt-4 rounded-lg bg-white p-4">
           <p className="text-sm font-semibold text-slate-900">
             Hinglish Explanation
           </p>
@@ -103,7 +111,7 @@ function HinglishAudioExplanation({ lessonText }) {
       )}
 
       {audioUrl && (
-        <div className="mt-4 rounded-xl bg-white p-4">
+        <div className="mt-4 rounded-lg bg-white p-4">
           <audio controls src={audioUrl} className="w-full">
             Your browser does not support audio playback.
           </audio>
