@@ -10,11 +10,17 @@ const youtubeRoutes = require("./routes/youtubeRoutes");
 const explanationRoutes = require("./routes/explanationRoutes");
 const app = express();
 
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+].filter(Boolean);
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true,
+    exposedHeaders: ["X-Hinglish-Text"],
   })
 );
 
@@ -38,13 +44,6 @@ app.use("/api/courses", courseRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/youtube", youtubeRoutes);
 app.use("/api/explanations", explanationRoutes);
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
-    credentials: true,
-    exposedHeaders: ["X-Hinglish-Text"],
-  })
-);
 
 app.use(notFound);
 app.use(errorHandler);
