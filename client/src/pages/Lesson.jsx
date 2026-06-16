@@ -1,60 +1,119 @@
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import LessonRenderer from "../components/LessonRenderer";
+import HinglishAudioExplanation from "../components/HinglishAudioExplanation";
 
-const sampleLessonContent = [
-  {
-    type: "heading",
-    text: "Introduction to AI",
-  },
-  {
-    type: "paragraph",
-    text: "Artificial intelligence is a field of computer science focused on building systems that can perform tasks usually requiring human intelligence.",
-  },
-  {
-    type: "code",
-    language: "python",
-    text: "print('Hello, AI!')",
-  },
-  {
-  type: "video",
-  query: "Artificial Intelligence explained for beginners",
-},
-  {
-    type: "mcq",
-    question: "What is AI?",
-    options: [
-      "A type of robot",
-      "A field of computer science",
-      "A programming language",
-    ],
-    answer: 1,
-  },
-];
+const sampleLesson = {
+  title: "Introduction to Artificial Intelligence",
+  description:
+    "Learn the basic idea of AI and how intelligent systems are built.",
+  content: [
+    {
+      type: "heading",
+      text: "What is Artificial Intelligence?",
+    },
+    {
+      type: "paragraph",
+      text: "Artificial Intelligence is a field of computer science focused on building systems that can perform tasks usually requiring human intelligence.",
+    },
+    {
+      type: "paragraph",
+      text: "These tasks can include learning, reasoning, problem solving, understanding language, and recognizing images.",
+    },
+    {
+      type: "video",
+      query: "Artificial Intelligence basics for beginners",
+    },
+  ],
+};
 
-function Lesson() {
-  const { courseId, moduleIndex, lessonIndex } = useParams();
+const Lesson = () => {
+  const { lessonId } = useParams();
+
+  const [lesson, setLesson] = useState(sampleLesson);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  useEffect(() => {
+    const fetchLesson = async () => {
+      if (!lessonId) {
+        setLesson(sampleLesson);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(`${API_BASE_URL}/lessons/${lessonId}`);
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || "Failed to load lesson");
+        }
+
+        setLesson(result.data);
+      } catch (err) {
+        setError(err.message || "Could not load lesson. Showing sample lesson.");
+        setLesson(sampleLesson);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLesson();
+  }, [lessonId, API_BASE_URL]);
+
+  const lessonText = useMemo(() => {
+    if (!lesson?.content || !Array.isArray(lesson.content)) {
+      return "";
+    }
+
+    return lesson.content
+      .map((block) => {
+        if (block.type === "heading") return block.text;
+        if (block.type === "paragraph") return block.text;
+        if (block.type === "code") return block.code;
+        if (block.type === "mcq") {
+          return `${block.question} ${block.options?.join(" ") || ""}`;
+        }
+        return "";
+      })
+      .filter(Boolean)
+      .join("\n\n");
+  }, [lesson]);
+
+  if (loading) {
+    return (
+      <main className="lesson-page">
+        <p>Loading lesson...</p>
+      </main>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Course: {courseId}
-        </p>
+    <main className="lesson-page">
+      <div className="lesson-header">
+        <Link to="/">← Back to Home</Link>
 
-        <h1 className="text-3xl font-bold text-slate-950">
-          Module {Number(moduleIndex) + 1}, Lesson {Number(lessonIndex) + 1}
-        </h1>
+        <h1>{lesson?.title || "Lesson"}</h1>
 
-        <p className="mt-2 text-slate-600">
-          This lesson is rendered from structured JSON blocks.
-        </p>
+        {lesson?.description && <p>{lesson.description}</p>}
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <LessonRenderer content={sampleLessonContent} />
-      </div>
-    </div>
+      {error && <p style={{ color: "orange" }}>{error}</p>}
+
+      <section className="lesson-content">
+        <LessonRenderer content={lesson?.content || []} />
+      </section>
+
+      <section className="lesson-audio-section">
+        <HinglishAudioExplanation lessonText={lessonText} />
+      </section>
+    </main>
   );
-}
+};
 
 export default Lesson;
