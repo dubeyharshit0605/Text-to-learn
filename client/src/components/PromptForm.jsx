@@ -41,16 +41,37 @@ function PromptForm() {
         prompt: prompt.trim(),
       });
 
-      const generatedCourse = response.data?.data;
+      const payload = response.data?.data || response.data;
 
-      if (!generatedCourse?._id) {
-        throw new Error("The server did not return a generated course.");
+      const generatedCourse =
+        payload?.course ||
+        payload?.generatedCourse ||
+        payload;
+
+      const courseId =
+        generatedCourse?._id ||
+        generatedCourse?.id ||
+        payload?.courseId ||
+        payload?._id ||
+        payload?.id;
+
+      if (!courseId) {
+        console.log("Generate response:", response.data);
+        throw new Error("The server did not return a generated course id.");
       }
 
-      saveStoredCourse(generatedCourse);
+      const normalizedCourse = {
+        ...generatedCourse,
+        _id: courseId,
+        id: courseId,
+      };
+
+      saveStoredCourse(normalizedCourse);
       setPrompt("");
-      navigate(`/courses/${generatedCourse._id}`);
+      navigate(`/courses/${courseId}`);
     } catch (err) {
+      console.error("Course generation failed:", err);
+
       setError(
         err.response?.data?.message ||
           err.message ||
@@ -62,7 +83,10 @@ function PromptForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <form
+      onSubmit={handleSubmit}
+      className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+    >
       <div className="flex flex-col gap-3 md:flex-row">
         <input
           type="text"
