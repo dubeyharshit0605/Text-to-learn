@@ -1,0 +1,57 @@
+require("dotenv").config();
+
+const express = require("express");
+const cors = require("cors");
+
+const courseRoutes = require("./routes/courseRoutes");
+const userRoutes = require("./routes/userRoutes");
+const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
+const youtubeRoutes = require("./routes/youtubeRoutes");
+const explanationRoutes = require("./routes/explanationRoutes");
+const app = express();
+
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+  })
+);
+
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "Text-to-Learn backend is running without database",
+  });
+});
+
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "Backend health check successful",
+  });
+});
+
+app.use("/api/courses", courseRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/youtube", youtubeRoutes);
+app.use("/api/explanations", explanationRoutes);
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    credentials: true,
+    exposedHeaders: ["X-Hinglish-Text"],
+  })
+);
+
+app.use(notFound);
+app.use(errorHandler);
+
+
+const PORT = process.env.PORT || 8000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
