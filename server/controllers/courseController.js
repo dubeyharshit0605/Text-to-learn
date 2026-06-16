@@ -8,7 +8,7 @@ const generateCourse = async (req, res, next) => {
     const generatedCourse = await generateCourseFromPrompt(prompt.trim());
 
     sendSuccess(res, 201, "Course generated successfully without database", {
-      _id: "temporary-course-id",
+      _id: `course-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       ...generatedCourse,
     });
   } catch (error) {
