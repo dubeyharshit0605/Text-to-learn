@@ -87,21 +87,45 @@ cp server/.env.example server/.env
 cp client/.env.example client/.env
 ```
 
-## Deployment
+## Deployment on Render
 
-Deploy the backend first, then the frontend. The frontend needs the final backend URL, and the backend needs the final frontend URL for CORS.
+This repo is configured to deploy both apps on Render with the included `render.yaml` Blueprint:
 
-### Backend on Render
+- `text-to-learn-api-dubeyharshit0605`: Node/Express backend
+- `text-to-learn-frontend-dubeyharshit0605`: React/Vite static frontend
 
-Option A: use the included Blueprint:
+### Render Blueprint
 
 1. Push this repository to GitHub.
-2. In Render, create a new Blueprint and select this repository.
-3. Render reads `render.yaml` from the repo root.
-4. Fill `CLIENT_URL` after the Vercel frontend URL is available. For the first backend deploy, you can temporarily set it to your expected Vercel URL or update it after frontend deployment.
-5. Optional variables: `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `YOUTUBE_API_KEY`, `GEMINI_API_KEY`.
+2. In Render, choose **New +** > **Blueprint**.
+3. Connect `dubeyharshit0605/Text-to-learn`.
+4. Render reads `render.yaml` from the repo root and creates both services.
+5. Optional secret variables can be left blank for demo mode: `AUTH0_DOMAIN`, `AUTH0_AUDIENCE`, `YOUTUBE_API_KEY`, `GEMINI_API_KEY`.
 
-Option B: create a Render Web Service manually:
+The expected production URLs are:
+
+```bash
+Frontend: https://text-to-learn-frontend-dubeyharshit0605.onrender.com
+Backend:  https://text-to-learn-api-dubeyharshit0605.onrender.com
+API:      https://text-to-learn-api-dubeyharshit0605.onrender.com/api
+Health:   https://text-to-learn-api-dubeyharshit0605.onrender.com/api/health
+```
+
+If Render changes either generated URL, update these environment variables in the Render dashboard:
+
+```bash
+# Backend service
+CLIENT_URL=https://your-frontend-service.onrender.com
+
+# Frontend static site
+VITE_API_BASE_URL=https://your-backend-service.onrender.com/api
+```
+
+Then redeploy both services.
+
+### Manual Render Setup
+
+Backend Web Service:
 
 ```bash
 Root Directory: server
@@ -111,56 +135,42 @@ Start Command: npm start
 Health Check Path: /api/health
 ```
 
-Render environment variables:
+Backend environment variables:
 
 ```bash
 NODE_ENV=production
 SKIP_DB=true
-CLIENT_URL=https://your-vercel-app.vercel.app
+CLIENT_URL=https://your-frontend-service.onrender.com
 AUTH0_DOMAIN=
 AUTH0_AUDIENCE=
 YOUTUBE_API_KEY=
 GEMINI_API_KEY=
 ```
 
-After deploy, verify:
+Frontend Static Site:
 
 ```bash
-https://your-render-service.onrender.com/api/health
+Root Directory: leave blank
+Build Command: cd client && npm install && npm run build
+Publish Directory: client/dist
 ```
 
-### Frontend on Vercel
-
-In Vercel, import the same GitHub repository and set:
+Frontend environment variables:
 
 ```bash
-Root Directory: client
-Framework Preset: Vite
-Build Command: npm run build
-Output Directory: dist
-```
-
-Vercel environment variables:
-
-```bash
-VITE_API_BASE_URL=https://your-render-service.onrender.com/api
+VITE_API_BASE_URL=https://your-backend-service.onrender.com/api
 VITE_AUTH0_DOMAIN=
 VITE_AUTH0_CLIENT_ID=
 VITE_AUTH0_AUDIENCE=
 ```
 
-The included `client/vercel.json` adds an SPA rewrite so direct routes like `/courses/:id` work after refresh.
+Add a frontend rewrite rule for React Router:
 
-### Final Production Checklist
-
-1. Deploy backend on Render.
-2. Copy the Render URL.
-3. Set `VITE_API_BASE_URL` in Vercel to `https://your-render-service.onrender.com/api`.
-4. Deploy frontend on Vercel.
-5. Copy the Vercel URL.
-6. Set `CLIENT_URL` in Render to the Vercel URL.
-7. Redeploy the backend after updating `CLIENT_URL`.
-8. Open the Vercel URL and generate a course.
+```bash
+Source: /*
+Destination: /index.html
+Action: Rewrite
+```
 
 ## API Overview
 
