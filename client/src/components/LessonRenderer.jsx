@@ -5,7 +5,18 @@ import VideoBlock from "./blocks/VideoBlock";
 import MCQBlock from "./blocks/MCQBlock";
 
 function LessonRenderer({ content = [] }) {
-  if (!Array.isArray(content) || content.length === 0) {
+  const normalizedContent = Array.isArray(content)
+    ? content
+    : content
+      ? [
+          {
+            type: "paragraph",
+            text: content,
+          },
+        ]
+      : [];
+
+  if (normalizedContent.length === 0) {
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-600">
         No lesson content available.
@@ -36,13 +47,13 @@ function LessonRenderer({ content = [] }) {
             key={index}
             className="my-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-800"
           >
-            Unsupported content block: {block.type}
+            Unsupported content block: {block.type || "unknown"}
           </div>
         );
     }
   };
 
-  return <div className="space-y-2">{content.map(renderBlock)}</div>;
+  return <div className="space-y-2">{normalizedContent.map(renderBlock)}</div>;
 }
 
 export default LessonRenderer;
