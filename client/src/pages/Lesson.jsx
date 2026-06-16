@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import LessonRenderer from "../components/LessonRenderer";
 import HinglishAudioExplanation from "../components/HinglishAudioExplanation";
+import LessonPDFExporter from "../components/LessonPDFExporter";
 
 const sampleLesson = {
   title: "Introduction to Artificial Intelligence",
@@ -101,6 +102,8 @@ const Lesson = () => {
         <h1>{lesson?.title || "Lesson"}</h1>
 
         {lesson?.description && <p>{lesson.description}</p>}
+
+        <LessonPDFExporter lesson={lesson} />
       </div>
 
       {error && <p style={{ color: "orange" }}>{error}</p>}
