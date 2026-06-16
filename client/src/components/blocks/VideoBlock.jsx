@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../../utils/api";
 import LoadingSpinner from "../LoadingSpinner";
-import ErrorMessage from "../ErrorMessage";
 
 function VideoBlock({ block }) {
   const [video, setVideo] = useState(null);
@@ -9,17 +8,22 @@ function VideoBlock({ block }) {
   const [error, setError] = useState("");
 
   const query = block.query || block.url || "";
+  const cleanQuery = query.trim();
+  const youtubeSearchUrl = cleanQuery
+    ? `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanQuery)}`
+    : "";
 
   useEffect(() => {
     const fetchVideo = async () => {
-      if (!query.trim()) {
-        setError("No video query provided.");
+      if (!cleanQuery) {
+        setError("");
         return;
       }
 
       try {
         setIsLoading(true);
         setError("");
+        setVideo(null);
 
         const response = await api.get("/youtube", {
           params: {
@@ -31,28 +35,48 @@ function VideoBlock({ block }) {
         const firstVideo = response.data?.data?.[0];
 
         if (!firstVideo) {
-          setError("No video found for this lesson.");
+          setError("No embedded video was found. Use the search link below.");
           return;
         }
 
         setVideo(firstVideo);
       } catch (error) {
         console.error(error);
-        setError("Unable to load video resource.");
+        setError("Video lookup is unavailable. Use the search link below.");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchVideo();
-  }, [query]);
+  }, [cleanQuery]);
 
   if (isLoading) {
     return <LoadingSpinner message="Finding a relevant video..." />;
   }
 
   if (error) {
-    return <ErrorMessage message={error} />;
+    if (!youtubeSearchUrl) {
+      return null;
+    }
+
+    return (
+      <div className="my-6 rounded-lg border border-sky-100 bg-sky-50 p-5">
+        <p className="text-sm font-semibold uppercase tracking-wide text-sky-700">
+          Suggested Video
+        </p>
+        <h3 className="mt-2 font-bold text-slate-950">{cleanQuery}</h3>
+        <p className="mt-1 text-sm text-slate-600">{error}</p>
+        <a
+          href={youtubeSearchUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-4 inline-flex rounded-lg bg-sky-700 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-800"
+        >
+          Open YouTube Search
+        </a>
+      </div>
+    );
   }
 
   if (!video) {

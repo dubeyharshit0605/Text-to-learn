@@ -5,16 +5,21 @@ import VideoBlock from "./blocks/VideoBlock";
 import MCQBlock from "./blocks/MCQBlock";
 
 function LessonRenderer({ content = [] }) {
-  const normalizedContent = Array.isArray(content)
-    ? content
-    : content
-      ? [
-          {
-            type: "paragraph",
-            text: content,
-          },
-        ]
-      : [];
+  const normalizedContent = (Array.isArray(content) ? content : [content])
+    .filter(Boolean)
+    .map((block) => {
+      if (typeof block === "string") {
+        return {
+          type: "paragraph",
+          text: block,
+        };
+      }
+
+      return {
+        ...block,
+        type: (block.type || "paragraph").toLowerCase(),
+      };
+    });
 
   if (normalizedContent.length === 0) {
     return (

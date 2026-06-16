@@ -11,6 +11,12 @@ import {
   saveStoredCourse,
 } from "../utils/courseStorage";
 
+const hasRenderableCourse = (course) =>
+  Array.isArray(course?.modules) &&
+  course.modules.some(
+    (module) => Array.isArray(module.lessons) && module.lessons.length > 0
+  );
+
 function CourseList({ courses }) {
   if (!courses.length) {
     return (
@@ -181,8 +187,13 @@ function Course() {
           const course = response.data?.data;
 
           if (course) {
-            saveStoredCourse(course);
-            setSelectedCourse(course);
+            const shouldUseFetchedCourse =
+              hasRenderableCourse(course) || !cachedCourse;
+
+            if (shouldUseFetchedCourse) {
+              saveStoredCourse(course);
+              setSelectedCourse(course);
+            }
           }
         } else {
           const response = await api.get("/courses");

@@ -9,6 +9,12 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import api from "../utils/api";
 import { findStoredCourse, saveStoredCourse } from "../utils/courseStorage";
 
+const hasRenderableCourse = (course) =>
+  Array.isArray(course?.modules) &&
+  course.modules.some(
+    (module) => Array.isArray(module.lessons) && module.lessons.length > 0
+  );
+
 const getLessonFromCourse = (course, moduleIndex, lessonIndex) => {
   const module = course?.modules?.[Number(moduleIndex)];
   const lesson = module?.lessons?.[Number(lessonIndex)];
@@ -70,8 +76,13 @@ function Lesson() {
         const fetchedCourse = response.data?.data;
 
         if (fetchedCourse) {
-          saveStoredCourse(fetchedCourse);
-          setCourse(fetchedCourse);
+          const shouldUseFetchedCourse =
+            hasRenderableCourse(fetchedCourse) || !cachedCourse;
+
+          if (shouldUseFetchedCourse) {
+            saveStoredCourse(fetchedCourse);
+            setCourse(fetchedCourse);
+          }
         }
       } catch (err) {
         if (!findStoredCourse(courseId)) {
